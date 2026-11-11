@@ -1,0 +1,252 @@
+@import "tailwindcss";
+
+/* ───────────────────────── Tokens ───────────────────────── */
+:root {
+  --ink: #1b1712;          /* warm sumi black */
+  --ink-soft: #3a3129;
+  --paper: #f3ebdd;        /* washi */
+  --paper-deep: #e7dcc8;
+  --cream: #fff7ea;
+  --night: #0d0b0a;
+  --sakura: #f4b6c8;
+  --sakura-deep: #c94f74;
+  --beni: #b8322f;         /* hanko red */
+  --sky: #2f7de1;
+  --pond: #0e3f3a;
+  --lamp: #f2b45a;
+  --pill: #0f0e0d;
+
+  --font-ui-serif: var(--font-roboto-serif), "Shippori Mincho", Georgia, serif;
+  --font-ui-mono: var(--font-roboto-mono), ui-monospace, monospace;
+  --font-ui-jp: var(--font-shippori), "Hiragino Mincho ProN", "Yu Mincho", serif;
+
+  --ease-out: cubic-bezier(0.22, 1, 0.36, 1);
+  --gutter: clamp(16px, 4vw, 48px);
+}
+
+@theme inline {
+  --font-serif: var(--font-ui-serif);
+  --font-mono: var(--font-ui-mono);
+  --font-jp: var(--font-ui-jp);
+  --font-sans: var(--font-ui-serif);
+  --color-ink: var(--ink);
+  --color-ink-soft: var(--ink-soft);
+  --color-paper: var(--paper);
+  --color-paper-deep: var(--paper-deep);
+  --color-cream: var(--cream);
+  --color-night: var(--night);
+  --color-sakura: var(--sakura);
+  --color-sakura-deep: var(--sakura-deep);
+  --color-beni: var(--beni);
+  --color-lamp: var(--lamp);
+  --color-pond: var(--pond);
+  --text-base--letter-spacing: -0.01em;
+  --text-lg--letter-spacing: -0.015em;
+  --text-xl--letter-spacing: -0.02em;
+  --text-2xl--letter-spacing: -0.025em;
+  --text-3xl--letter-spacing: -0.03em;
+  --text-4xl--letter-spacing: -0.035em;
+  --text-5xl--letter-spacing: -0.04em;
+  --text-6xl--letter-spacing: -0.04em;
+  --text-7xl--letter-spacing: -0.045em;
+  --text-8xl--letter-spacing: -0.045em;
+  --text-9xl--letter-spacing: -0.05em;
+}
+
+/* ───────────────────────── Base ───────────────────────── */
+@layer base {
+  html {
+    overflow-x: hidden;
+    background: var(--night);
+    color-scheme: light;
+    -webkit-text-size-adjust: 100%;
+  }
+  body {
+    background: var(--night);
+    color: var(--cream);
+    font-family: var(--font-ui-serif);
+    font-optical-sizing: auto;
+    text-rendering: optimizeLegibility;
+    -webkit-font-smoothing: antialiased;
+  }
+  ::selection {
+    background: color-mix(in oklab, var(--sakura) 70%, transparent);
+    color: var(--ink);
+  }
+  :focus-visible {
+    outline: 2px solid var(--sakura);
+    outline-offset: 3px;
+    border-radius: 999px;
+  }
+  * {
+    scrollbar-width: thin;
+    scrollbar-color: color-mix(in oklab, var(--cream) 30%, transparent) transparent;
+  }
+  .jp {
+    font-family: var(--font-ui-jp);
+    letter-spacing: 0.02em;
+  }
+}
+
+/* Lenis */
+html.lenis,
+html.lenis body {
+  height: auto;
+}
+.lenis.lenis-smooth {
+  scroll-behavior: auto !important;
+}
+.lenis.lenis-smooth [data-lenis-prevent] {
+  overscroll-behavior: contain;
+}
+.lenis.lenis-stopped {
+  overflow: clip;
+}
+
+/* ───────────────────────── Pills (lettra-style) ───────────────────────── */
+@layer components {
+  .pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.45rem;
+    height: 2rem;
+    padding: 0 0.95rem;
+    border-radius: 999px;
+    background: var(--pill);
+    color: #fff;
+    border: 1px solid rgb(255 255 255 / 0.1);
+    box-shadow:
+      0 0 0 1px rgb(0 0 0 / 0.18),
+      inset 0 -2px 2px rgb(0 0 0 / 0.35),
+      inset 0 1px 0 rgb(255 255 255 / 0.08),
+      0 6px 18px -8px rgb(0 0 0 / 0.45);
+    font-size: 0.875rem;
+    line-height: 1;
+    white-space: nowrap;
+    transition:
+      transform 0.35s var(--ease-out),
+      background-color 0.25s ease,
+      color 0.25s ease;
+    -webkit-tap-highlight-color: transparent;
+  }
+  .pill:hover {
+    transform: translateY(-1px);
+    background: #1f1c1a;
+  }
+  .pill:active {
+    transform: translateY(0) scale(0.97);
+  }
+  @media (max-width: 480px) {
+    .pill {
+      padding: 0 0.62rem;
+      font-size: 0.78rem;
+      gap: 0.35rem;
+    }
+  }
+  .pill-light {
+    background: var(--cream);
+    color: var(--ink);
+    border-color: rgb(0 0 0 / 0.08);
+    box-shadow:
+      inset 0 -2px 2px rgb(0 0 0 / 0.12),
+      0 6px 18px -8px rgb(0 0 0 / 0.35);
+  }
+  .pill-light:hover {
+    background: #fff;
+  }
+  .pill-sakura {
+    background: var(--sakura-deep);
+    color: #fff;
+  }
+  .pill-sakura:hover {
+    background: #b23f63;
+  }
+  .pill-round {
+    width: 2rem;
+    padding: 0;
+    justify-content: center;
+  }
+  .mono-label {
+    font-family: var(--font-ui-mono);
+    font-size: 0.6875rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+  .text-shadow-soft {
+    text-shadow:
+      0 1px 2px rgb(10 20 40 / 0.18),
+      0 8px 30px rgb(10 30 70 / 0.22);
+  }
+  .text-shadow-night {
+    text-shadow:
+      0 1px 2px rgb(0 0 0 / 0.4),
+      0 10px 40px rgb(0 0 0 / 0.45);
+  }
+  .washi {
+    background-color: var(--paper);
+    background-image: url("/img/paper.webp");
+    background-size: 384px 384px;
+  }
+  .glass-warm {
+    /* no backdrop-filter: re-blurring a playing video every frame is what Safari chokes on */
+    background: linear-gradient(180deg, rgb(30 22 15 / 0.8), rgb(18 13 10 / 0.86));
+    border: 1px solid rgb(255 236 210 / 0.1);
+    box-shadow:
+      inset 0 1px 0 rgb(255 236 210 / 0.08),
+      0 30px 60px -30px rgb(0 0 0 / 0.6);
+  }
+}
+
+/* ───────────────────────── Motion helpers ───────────────────────── */
+@keyframes sway {
+  0%,
+  100% {
+    transform: rotate(var(--sway-from, -1.6deg));
+  }
+  50% {
+    transform: rotate(var(--sway-to, 1.6deg));
+  }
+}
+@keyframes ripple {
+  from {
+    transform: translate(-50%, -50%) scale(0.2);
+    opacity: 0.75;
+  }
+  to {
+    transform: translate(-50%, -50%) scale(1);
+    opacity: 0;
+  }
+}
+@keyframes bob {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-4px);
+  }
+}
+@keyframes stamp-in {
+  0% {
+    transform: scale(1.6) rotate(-14deg);
+    opacity: 0;
+  }
+  60% {
+    transform: scale(0.94) rotate(-6deg);
+    opacity: 1;
+  }
+  100% {
+    transform: scale(1) rotate(-8deg);
+    opacity: 1;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+  }
+}

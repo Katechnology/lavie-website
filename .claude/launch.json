@@ -1,0 +1,7 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    { "name": "lavie-dev", "runtimeExecutable": "pnpm", "runtimeArgs": ["dev", "--port", "3210"], "port": 3210 },
+    { "name": "lavie-prod", "runtimeExecutable": "pnpm", "runtimeArgs": ["start", "--port", "3220"], "port": 3220 }
+  ]
+}
