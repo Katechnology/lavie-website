@@ -2,6 +2,7 @@
 
 import { useSyncExternalStore } from "react";
 import type Lenis from "lenis";
+import { copy, type Lang } from "@/content/site";
 
 type State = {
   /** 0..4 — which painted scene is currently on stage (rounded during a transition) */
@@ -9,9 +10,11 @@ type State = {
   /** true once the loader has finished */
   ready: boolean;
   lenis: Lenis | null;
+  /** page language; the server always renders Vietnamese */
+  lang: Lang;
 };
 
-let state: State = { scene: 0, ready: false, lenis: null };
+let state: State = { scene: 0, ready: false, lenis: null, lang: "vi" };
 const listeners = new Set<() => void>();
 
 export function setStore(patch: Partial<State>) {
@@ -38,7 +41,7 @@ export function useStore<T>(selector: (s: State) => T): T {
   return useSyncExternalStore(
     subscribe,
     () => selector(state),
-    () => selector({ scene: 0, ready: false, lenis: null }),
+    () => selector({ scene: 0, ready: false, lenis: null, lang: "vi" }),
   );
 }
 
@@ -65,3 +68,6 @@ export function scrollToId(id: string, { immediate = false } = {}) {
     focusSection(el);
   }
 }
+
+/** All visible strings in the active language. */
+export const useCopy = () => copy[useStore((s) => s.lang)];

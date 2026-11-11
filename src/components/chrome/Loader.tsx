@@ -3,8 +3,8 @@
 import { useEffect, useState } from "react";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import Mark from "./Mark";
-import { loaderPhrases } from "@/content/site";
-import { getStore, scrollToId, setStore } from "@/lib/store";
+import { copy } from "@/content/site";
+import { getStore, scrollToId, setStore, useStore } from "@/lib/store";
 
 /** long enough for the stamp to land; short enough not to stand between a visitor and the page */
 const MIN_MS = 900;
@@ -17,10 +17,11 @@ export default function Loader() {
   const [phrase, setPhrase] = useState(0);
   const [leaving, setLeaving] = useState(false);
   const [gone, setGone] = useState(false);
+  const phrases = copy[useStore((s) => s.lang)].loader;
 
   useEffect(() => {
     const t0 = performance.now();
-    const cycle = setInterval(() => setPhrase((p) => (p + 1) % loaderPhrases.length), 900);
+    const cycle = setInterval(() => setPhrase((p) => p + 1), 900);
     let finished = false;
     const finish = () => {
       if (finished) return;
@@ -70,7 +71,7 @@ export default function Loader() {
           <Mark size={56} />
         </div>
         <p className="text-[17px] tracking-[-0.01em]" key={phrase} style={{ animation: "fade-up .5s ease both" }}>
-          {loaderPhrases[phrase]}
+          {phrases[phrase % phrases.length]}
         </p>
       </div>
       <p className="mono-label absolute bottom-6 text-ink/45">Lavie · 日本語 · Huế</p>

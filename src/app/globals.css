@@ -16,7 +16,7 @@
   --lamp: #f2b45a;
   --pill: #0f0e0d;
 
-  --font-ui-serif: var(--font-roboto-serif), "Shippori Mincho", Georgia, serif;
+  --font-ui-serif: var(--font-roboto-serif), var(--font-shippori), "Hiragino Mincho ProN", "Yu Mincho", Georgia, serif;
   --font-ui-mono: var(--font-roboto-mono), ui-monospace, monospace;
   --font-ui-jp: var(--font-shippori), "Hiragino Mincho ProN", "Yu Mincho", serif;
 
@@ -172,6 +172,32 @@ html.lenis body {
     -webkit-background-clip: text;
     background-clip: text;
     color: transparent;
+  }
+  /* ── 日本語 ─────────────────────────────────────────────
+     Kanji and kana fall through Roboto Serif to Shippori Mincho. Mincho has no true italic,
+     so the italic accents become upright (brand wordmarks marked data-latin keep theirs);
+     headings get kana-proportional spacing and looser tracking; body text more leading. */
+  html[lang="ja"] .italic:not([data-latin]),
+  html[lang="ja"] .italic:not([data-latin]) * {
+    font-style: normal !important; /* the `italic` utility sits in a later layer */
+  }
+  html[lang="ja"] :is(h1, h2, h3) {
+    letter-spacing: -0.035em !important;
+    font-feature-settings: "palt";
+    word-break: auto-phrase;
+    line-break: strict;
+  }
+  /* (the letter keeps its own leading: its text sits on ruled lines) */
+  html[lang="ja"] :is(p, li, dd, summary):not(.mono-label):not([data-sheet] *) {
+    line-height: 1.8 !important;
+    line-break: strict;
+  }
+  /* two-part headlines break only between their parts */
+  html[lang="ja"] [data-phrase] {
+    display: inline-block;
+  }
+  html[lang="ja"] #cta-title {
+    font-size: clamp(48px, 9vw, 160px);
   }
   /* headings that receive focus after in-page navigation */
   [tabindex="-1"]:focus {

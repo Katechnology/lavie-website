@@ -6,7 +6,8 @@ import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { useGSAP } from "@gsap/react";
 import ScrollReveal from "@/components/ScrollReveal";
 import TiltedCard from "@/components/TiltedCard";
-import { letter, site } from "@/content/site";
+import { site } from "@/content/site";
+import { useCopy } from "@/lib/store";
 
 gsap.registerPlugin(ScrollTrigger, useGSAP);
 
@@ -34,6 +35,8 @@ function Hanko() {
 
 export default function Letter() {
   const root = useRef<HTMLDivElement>(null);
+  const t = useCopy();
+  const { letter } = t;
 
   useGSAP(
     () => {
@@ -89,7 +92,7 @@ export default function Letter() {
             >
               <span className="absolute -top-3 left-1/2 z-20 h-7 w-24 -translate-x-1/2 rotate-2 bg-[#cfe3d0]/85 shadow-sm" aria-hidden />
               <TiltedCard
-                altText="Ảnh Lavie, chạm để lật"
+                altText={letter.flipAlt}
                 containerHeight="352px"
                 containerWidth="100%"
                 imageHeight="352px"
@@ -102,18 +105,18 @@ export default function Letter() {
                 shadow={0.6}
                 backContent={
                   <div className="washi flex h-full w-full flex-col justify-center p-5 text-ink">
-                    <p className="font-serif text-[20px] leading-snug italic">“Hẹn gặp bạn ở lớp nhé!”</p>
+                    <p className="font-serif text-[20px] leading-snug italic">{letter.back}</p>
                     <p className="jp mt-3 text-[15px] text-ink/70">またね 🌸</p>
                   </div>
                 }
               >
                 <div className="h-full bg-[#fbf8f2] px-3 pt-3">
                   {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img src="/img/lavie-polaroid.webp" alt="Lavie, giáo viên tiếng Nhật ở Huế" className="block h-[280px] w-full object-cover" />
-                  <p className="mt-3 text-center font-serif text-[16px] text-ink/80 italic">Lavie · {site.city.split(",")[0]}</p>
+                  <img src="/img/lavie-polaroid.webp" alt={letter.photoAlt} className="block h-[280px] w-full object-cover" />
+                  <p className="mt-3 text-center font-serif text-[16px] text-ink/80 italic" data-latin lang="vi">Lavie · Huế</p>
                 </div>
               </TiltedCard>
-              <p className="mt-3 text-center"><span className="mono-label rounded-full bg-ink/70 px-2.5 py-1 text-[10px] text-cream">chạm để lật ↻</span></p>
+              <p className="mt-3 text-center"><span className="mono-label rounded-full bg-ink/70 px-2.5 py-1 text-[10px] text-cream">{letter.flipHint} ↻</span></p>
             </div>
 
             {/* the letter */}
@@ -132,9 +135,9 @@ export default function Letter() {
                 {letter.greeting}
               </h2>
               <div className="relative mt-4">
-                {letter.paragraphs.map((p) => (
+                {letter.paragraphs.map((p, i) => (
                   <ScrollReveal
-                    key={p}
+                    key={i}
                     as="p"
                     baseOpacity={0.12}
                     enableBlur={false}
@@ -149,7 +152,7 @@ export default function Letter() {
               <div className="relative mt-6 flex items-end justify-between gap-4">
                 <div>
                   <p className="text-[17px] italic text-ink/75">{letter.signoff}</p>
-                  <p className="mt-1 font-serif text-[44px] leading-none italic tracking-[-0.03em]">Lavie</p>
+                  <p className="mt-1 font-serif text-[44px] leading-none italic tracking-[-0.03em]" data-latin>Lavie</p>
                   <p className="jp mt-1 text-[14px] text-ink/60">{site.nameJp} · フエより</p>
                 </div>
                 <div data-hanko className="-rotate-[8deg]">
@@ -157,9 +160,9 @@ export default function Letter() {
                 </div>
               </div>
 
-              {site.credentials.length > 0 && (
+              {letter.credentials.length > 0 && (
                 <dl className="relative mt-8 grid grid-cols-2 gap-4 border-t border-ink/15 pt-6 sm:grid-cols-4">
-                  {site.credentials.map((c) => (
+                  {letter.credentials.map((c) => (
                     <div key={c.label}>
                       <dt className="mono-label text-ink/55">{c.label}</dt>
                       <dd className="font-serif text-[30px] leading-none">{c.value}</dd>
@@ -170,13 +173,13 @@ export default function Letter() {
             </article>
           </div>
 
-          {site.testimonials.length > 0 && (
+          {letter.testimonials.length > 0 && (
             <ul className="mx-auto mt-14 grid max-w-[980px] gap-4 md:grid-cols-3">
-              {site.testimonials.map((t) => (
-                <li key={t.name} className="washi rounded-[3px] p-6 text-ink shadow-[0_30px_40px_-25px_rgba(0,0,0,.5)]">
-                  <p className="font-serif text-[17px] leading-relaxed italic">“{t.quote}”</p>
-                  <p className="mt-4 text-[14px] font-medium">{t.name}</p>
-                  <p className="mono-label text-ink/55">{t.detail}</p>
+              {letter.testimonials.map((q) => (
+                <li key={q.name} className="washi rounded-[3px] p-6 text-ink shadow-[0_30px_40px_-25px_rgba(0,0,0,.5)]">
+                  <p className="font-serif text-[17px] leading-relaxed italic">“{q.quote}”</p>
+                  <p className="mt-4 text-[14px] font-medium">{q.name}</p>
+                  <p className="mono-label text-ink/55">{q.detail}</p>
                 </li>
               ))}
             </ul>

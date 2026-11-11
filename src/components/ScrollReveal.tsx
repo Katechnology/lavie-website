@@ -133,6 +133,28 @@ const ScrollReveal: React.FC<ScrollRevealProps> = ({
 
   const splitText = useMemo(() => {
     if (text === null) return null;
+    // Japanese has no spaces: reveal character by character, keeping closing punctuation on the
+    // character before it and opening brackets on the one after (so 。、」 never start a line)
+    if (/[぀-ヿ㐀-鿿]/.test(text) && !/\s/.test(text.trim())) {
+      const units: string[] = [];
+      let carry = '';
+      for (const ch of Array.from(text)) {
+        if (/[、。，．！？」』）〕】ー…ゃゅょっぁぃぅぇぉャュョッァィゥェォ]/.test(ch) && units.length) units[units.length - 1] += ch;
+        else if (/[「『（〔【]/.test(ch)) carry += ch;
+        else {
+          units.push(carry + ch);
+          carry = '';
+        }
+      }
+      if (carry) units.push(carry);
+      return units.map((unit, index) => (
+        <span className="inline-block" data-word key={index}>
+          <span className="inline-block" data-piece>
+            {unit}
+          </span>
+        </span>
+      ));
+    }
     return text.split(/(\s+)/).map((word, index) =>
       word.trim() === '' ? (
         word

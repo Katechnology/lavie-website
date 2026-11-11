@@ -10,6 +10,7 @@ import Classes from "@/components/sections/Classes";
 import Footer from "@/components/sections/Footer";
 import Grain from "@/components/Grain";
 import ClickBloom from "@/components/fx/ClickBloom";
+import { LangCurtain } from "@/components/chrome/LangSwitch";
 
 export default function Home() {
   return (
@@ -31,6 +32,7 @@ export default function Home() {
       </main>
       <Footer />
       <ClickBloom />
+      <LangCurtain />
     </>
   );
 }

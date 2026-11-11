@@ -1,6 +1,6 @@
 import type { Metadata, Viewport } from "next";
 import { Roboto_Mono, Roboto_Serif, Shippori_Mincho } from "next/font/google";
-import { site } from "@/content/site";
+import { copy, site } from "@/content/site";
 import { siteUrl } from "@/lib/site-url";
 import "./globals.css";
 
@@ -75,7 +75,7 @@ const jsonLd = {
     "@type": "Person",
     name: "Lavie",
     jobTitle: "Giáo viên tiếng Nhật",
-    hasCredential: site.credentials.map((c) => ({
+    hasCredential: copy.vi.letter.credentials.map((c) => ({
       "@type": "EducationalOccupationalCredential",
       name: `${c.label} ${c.value}`,
     })),

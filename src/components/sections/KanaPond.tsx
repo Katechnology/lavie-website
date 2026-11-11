@@ -5,7 +5,7 @@ import { gsap } from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { useGSAP } from "@gsap/react";
 import { kana, type KanaItem } from "@/content/site";
-import { prefersReducedMotion } from "@/lib/store";
+import { prefersReducedMotion, useCopy } from "@/lib/store";
 
 gsap.registerPlugin(ScrollTrigger, useGSAP);
 
@@ -37,6 +37,7 @@ function useJapaneseVoice() {
 export default function KanaPond() {
   const root = useRef<HTMLDivElement>(null);
   const board = useRef<HTMLDivElement>(null);
+  const { pond } = useCopy();
   const [mode, setMode] = useState<Mode>("hiragana");
   const [active, setActive] = useState<KanaItem>(kana.hiragana.items[6]);
   const [pulse, setPulse] = useState(0);
@@ -82,17 +83,17 @@ export default function KanaPond() {
         <div className="mx-auto grid w-full max-w-[1240px] items-center gap-10 lg:grid-cols-[1.25fr_0.75fr] lg:gap-16">
           <div>
             <div data-pond-head className="text-white text-shadow-night">
-              <p className="mono-label mb-3 text-white/80">池 · thử một bài học nhỏ</p>
+              <p className="mono-label mb-3 text-white/80">{pond.label}</p>
               <h2 id="pond-title" className="font-serif text-[clamp(48px,7.4vw,124px)] leading-[0.88] font-[460] tracking-[-0.045em] text-[#bfe9c8]">
-                Chạm vào <br />
-                <span className="italic">là nhớ.</span>
+                {pond.title[0]} <br />
+                <span className="italic">{pond.title[1]}</span>
               </h2>
               <p className="mt-5 max-w-[40ch] text-[16.5px] leading-[1.55] text-white/90 md:text-[18px]">
-                Chạm vào một chữ để nghe cách đọc và một từ ví dụ. Lớp của Lavie cũng vậy: học bằng tai, bằng mắt, và bằng tay.
+                {pond.body}
               </p>
             </div>
 
-            <div role="group" aria-label="Chọn bảng chữ" className="mt-8 flex flex-wrap gap-1.5">
+            <div role="group" aria-label={pond.pick} className="mt-8 flex flex-wrap gap-1.5">
               {(Object.keys(kana) as Mode[]).map((m) => (
                 <button
                   key={m}
@@ -119,7 +120,7 @@ export default function KanaPond() {
                       data-glyph
                       type="button"
                       onClick={() => choose(it)}
-                      aria-label={`${it.glyph}, đọc là ${it.romaji}`}
+                      aria-label={`${it.glyph}, ${pond.readAs} ${it.romaji}`}
                       aria-pressed={on}
                       className={`group relative grid aspect-square place-items-center rounded-full transition-[background-color,box-shadow,transform] duration-500 ease-[cubic-bezier(.22,1,.36,1)] hover:-translate-y-1 ${
                         on ? "bg-white/25 shadow-[0_0_0_1px_rgba(255,255,255,.55),0_14px_30px_-10px_rgba(0,0,0,.5)]" : "bg-[rgba(8,40,36,.38)] shadow-[0_0_0_1px_rgba(255,255,255,.16)] hover:bg-[rgba(8,40,36,.22)]"
@@ -144,7 +145,11 @@ export default function KanaPond() {
               <div className="mt-6 border-t border-ink/15 pt-5">
                 <p className="jp text-[30px] leading-tight">{active.word}</p>
                 <p className="mt-1 text-[15px] text-ink/75">
-                  <span className="font-mono text-[13px]">{active.reading}</span> · <span className="italic">{active.meaning}</span>
+                  <span className="font-mono text-[13px]">{active.reading}</span> ·{" "}
+                  {pond.meaning && <span className="mono-label mr-1 text-ink/50">{pond.meaning}</span>}
+                  <span className="italic" lang="vi">
+                    {active.meaning}
+                  </span>
                 </p>
               </div>
             </div>
@@ -153,7 +158,7 @@ export default function KanaPond() {
                 <path d="M4 10v4h4l5 4V6L8 10H4Z" strokeLinejoin="round" />
                 <path d="M16.5 8.5a5 5 0 0 1 0 7M19 6a8.5 8.5 0 0 1 0 12" strokeLinecap="round" />
               </svg>
-              Nghe lại
+              {pond.replay}
             </button>
           </aside>
         </div>

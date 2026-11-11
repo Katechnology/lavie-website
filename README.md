@@ -26,10 +26,16 @@ painted set (`*-m-*`) and 720p loops.
 
 ## Editing content
 
-All copy lives in **`src/content/site.ts`** (Vietnamese).
+All copy lives in **`src/content/site.ts`**, in two languages: `copy.vi` (Tiếng Việt, the default and
+what search engines see) and `copy.ja` (日本語). Both blocks have the same shape, and TypeScript fails the
+build if a Japanese string is missing. Edit a sentence in both blocks.
 
-- `site.credentials` holds confirmed facts only (JLPT N1, confirmed by the owner). Add years teaching
-  when known. `site.testimonials` stays empty until there are real student quotes; the block is hidden
+- **Language switch:** the `VI · 日` pill in the top nav (`src/components/chrome/LangSwitch.tsx`). A washi
+  sheet sweeps out with a hanko stamp; the page changes language underneath and keeps the reader's place.
+  The choice is remembered on the device. Share a Japanese link with `?lang=ja`.
+
+- `letter.credentials` (in each language) holds confirmed facts only (JLPT N1, confirmed by the owner). Add years teaching
+  when known. `letter.testimonials` stays empty until there are real student quotes; the block is hidden
   while empty.
 - Phone / Zalo: `site.contact`.
 - Site URL (canonical, Open Graph, sitemap, robots, JSON-LD): on Vercel the production `*.vercel.app`

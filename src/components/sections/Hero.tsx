@@ -6,13 +6,13 @@ import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { useGSAP } from "@gsap/react";
 import SplitText from "@/components/SplitText";
 import { ScrollHint } from "@/components/chrome/Chrome";
-import { hero } from "@/content/site";
-import { prefersReducedMotion, scrollToId, useStore } from "@/lib/store";
+import { prefersReducedMotion, scrollToId, useCopy, useStore } from "@/lib/store";
 
 gsap.registerPlugin(ScrollTrigger, useGSAP);
 
 export default function Hero() {
   const ready = useStore((s) => s.ready);
+  const { hero } = useCopy();
   const wrap = useRef<HTMLDivElement>(null);
   const copy = useRef<HTMLDivElement>(null);
 
@@ -71,7 +71,7 @@ export default function Hero() {
           >
             {hero.title.map((line, i) => (
               <span
-                key={line}
+                key={i}
                 data-dissolve
                 className="block min-h-[0.95em]"
                 aria-hidden
