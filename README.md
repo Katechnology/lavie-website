@@ -37,7 +37,8 @@ All copy lives in **`src/content/site.ts`** (Vietnamese).
 
 ## Deploy
 
-Vercel, Next.js preset, `pnpm build`. Media under `/seq`, `/video`, `/scenes`, `/img` is cached for a
+Vercel project `lavie-website`, connected to this GitHub repo: **every push to `main` deploys to
+https://lavie-website-lake.vercel.app** (other branches get preview URLs). Next.js preset, `pnpm build`. Media under `/seq`, `/video`, `/scenes`, `/img` is cached for a
 week (`next.config.ts`): **when an asset's bytes change, give it a new file or folder name.**
 
 ## Art pipeline (`art/`)
