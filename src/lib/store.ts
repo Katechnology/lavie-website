@@ -42,13 +42,26 @@ export function useStore<T>(selector: (s: State) => T): T {
   );
 }
 
-export function scrollToId(id: string) {
-  const el = document.getElementById(id);
-  if (!el) return;
-  const lenis = state.lenis;
-  if (lenis) lenis.scrollTo(el, { offset: 0, duration: 2.2 });
-  else el.scrollIntoView({ behavior: "smooth" });
-}
-
 export const prefersReducedMotion = () =>
   typeof window !== "undefined" && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+/** Move keyboard / screen-reader focus to where the page just scrolled to. */
+function focusSection(el: HTMLElement) {
+  const target = el.querySelector<HTMLElement>("h1, h2") ?? el;
+  if (!target.hasAttribute("tabindex")) target.setAttribute("tabindex", "-1");
+  target.focus({ preventScroll: true });
+}
+
+export function scrollToId(id: string, { immediate = false } = {}) {
+  const el = document.getElementById(id);
+  if (!el) return;
+  const jump = immediate || prefersReducedMotion();
+  const lenis = state.lenis;
+  if (lenis) {
+    lenis.scrollTo(el, { offset: 0, duration: 2.2, immediate: jump, force: true, onComplete: () => focusSection(el) });
+    if (jump) focusSection(el);
+  } else {
+    el.scrollIntoView({ behavior: jump ? "auto" : "smooth" });
+    focusSection(el);
+  }
+}

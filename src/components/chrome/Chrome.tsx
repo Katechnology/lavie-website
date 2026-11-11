@@ -135,7 +135,9 @@ export function ScrollHint() {
       type="button"
       onClick={() => scrollToId("lo-trinh")}
       className="absolute bottom-16 left-1/2 z-10 flex -translate-x-1/2 items-center gap-1.5 transition-opacity duration-700 sm:bottom-20"
-      style={{ opacity: ready && scene === 0 ? 1 : 0 }}
+      style={{ opacity: ready && scene === 0 ? 1 : 0, pointerEvents: ready && scene === 0 ? undefined : "none" }}
+      tabIndex={ready && scene === 0 ? undefined : -1}
+      aria-hidden={ready && scene === 0 ? undefined : true}
       aria-label="Cuộn xuống"
     >
       <span className="pill pill-light h-7 text-[13px]">Cuộn xuống</span>

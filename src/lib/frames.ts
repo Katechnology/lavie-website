@@ -17,15 +17,15 @@ type Tier = "1600" | "1024" | "m720";
 
 const STRIDES = [16, 8, 4, 2, 1];
 function loadOrder(n: number) {
-  const seen = new Set<number>();
-  const out: number[] = [];
+  // both ends first: the first frame is where the move starts, the last is the next scene
+  const seen = new Set<number>([0, n - 1]);
+  const out: number[] = [0, n - 1];
   for (const s of STRIDES)
     for (let i = 0; i < n; i += s)
       if (!seen.has(i)) {
         seen.add(i);
         out.push(i);
       }
-  if (!seen.has(n - 1)) out.splice(1, 0, n - 1); // the last frame early: it's the next scene
   return out;
 }
 
@@ -36,12 +36,13 @@ const MAX_INFLIGHT = 6;
 function pump() {
   while (inflight < MAX_INFLIGHT && queue.length) {
     const job = queue.shift()!;
-    if (job.seq.blobs[job.i] || job.seq.dead) continue;
+    if (job.seq.blobs[job.i] || job.seq.dead || job.seq.fetching.has(job.i)) continue;
     inflight++;
-    fetch(job.seq.url(job.i))
+    job.seq.fetching.add(job.i);
+    fetch(job.seq.url(job.i), { signal: job.seq.abort.signal })
       .then((r) => (r.ok ? r.blob() : null))
       .then((b) => {
-        if (b && !job.seq.dead) {
+        if (b && !job.seq.dead && !job.seq.blobs[job.i]) {
           job.seq.blobs[job.i] = b;
           job.seq.loaded++;
           job.seq.onBlob(job.i);
@@ -49,6 +50,7 @@ function pump() {
       })
       .catch(() => {})
       .finally(() => {
+        job.seq.fetching.delete(job.i);
         inflight--;
         pump();
       });
@@ -59,6 +61,16 @@ export class FrameSequence {
   readonly blobs: (Blob | null)[];
   readonly bmps: (ImageBitmap | null)[];
   private decoding = new Set<number>();
+  /** frame files currently being fetched (so a re-queue never fetches twice) */
+  readonly fetching = new Set<number>();
+  /** cancels this move's in-flight downloads when it is thrown away (e.g. rotation) */
+  readonly abort = new AbortController();
+  /** bumped by release(): decodes that finish afterwards are dropped, not cached */
+  private gen = 0;
+  /** only the move on screen decodes a window around its playhead */
+  active = false;
+  /** the stage asked for this move's first/last frames to be ready */
+  private warm = false;
   loaded = 0;
   dead = false;
   queued = false;
@@ -84,7 +96,7 @@ export class FrameSequence {
   load(urgent = false) {
     if (this.queued && !urgent) return;
     const jobs = loadOrder(this.n)
-      .filter((i) => !this.blobs[i])
+      .filter((i) => !this.blobs[i] && !this.fetching.has(i))
       .map((i) => ({ seq: this as FrameSequence, i }));
     if (urgent) {
       // drop our older entries, then put ours first
@@ -100,7 +112,8 @@ export class FrameSequence {
   }
 
   onBlob(i: number) {
-    if (Math.abs(i - this.head) <= WINDOW_AHEAD + 2) this.decodeAround(this.head);
+    if (this.warm && this.pinned(i)) this.decode(i);
+    if (this.active && Math.abs(i - this.head) <= WINDOW_AHEAD + 2) this.decodeAround(this.head);
   }
 
   /** keep only frames near the playhead decoded */
@@ -131,17 +144,27 @@ export class FrameSequence {
   }
 
   warmEnds() {
+    this.warm = true;
     [0, 1, this.n - 2, this.n - 1].forEach((i) => this.decode(i));
   }
 
   private decode(i: number) {
     const b = this.blobs[i];
     if (!b || this.bmps[i] || this.decoding.has(i) || typeof createImageBitmap !== "function") return;
+    if (this.decoding.size >= MAX_DECODES && !this.pinned(i)) return; // the next tick asks again
     this.decoding.add(i);
+    const gen = this.gen;
     createImageBitmap(b)
       .then((bmp) => {
         this.decoding.delete(i);
-        if (this.dead) return bmp.close();
+        // scrolled on past it while it decoded: don't keep a frame we'd free next tick
+        const stale = !this.pinned(i) && Math.abs(i - this.head) > WINDOW_AHEAD + 4;
+        if (this.dead || gen !== this.gen || this.bmps[i] || stale) {
+          bmp.close();
+          // released and re-warmed while this was in flight: decode again under the new generation
+          if (!this.dead && gen !== this.gen && this.warm && this.pinned(i)) this.decode(i);
+          return;
+        }
         this.bmps[i] = bmp;
         this.version++;
       })
@@ -192,12 +215,16 @@ export class FrameSequence {
 
   /** free decoded frames (the compressed files stay, so coming back is quick) */
   release() {
+    this.gen++;
+    this.warm = false;
+    this.active = false;
     this.bmps.forEach((b) => b?.close());
     this.bmps.fill(null);
   }
 
   dispose() {
     this.dead = true;
+    this.abort.abort();
     this.release();
     for (let k = queue.length - 1; k >= 0; k--) if (queue[k].seq === this) queue.splice(k, 1);
   }
@@ -205,6 +232,8 @@ export class FrameSequence {
 
 const WINDOW_AHEAD = 10;
 const WINDOW_BEHIND = 5;
+/** decodes in flight per move; the rest wait for the next frame */
+const MAX_DECODES = 6;
 
 type Conn = { saveData?: boolean; effectiveType?: string };
 

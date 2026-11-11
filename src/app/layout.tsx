@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import { Roboto_Mono, Roboto_Serif, Shippori_Mincho } from "next/font/google";
 import { site } from "@/content/site";
+import { siteUrl } from "@/lib/site-url";
 import "./globals.css";
 
 const robotoSerif = Roboto_Serif({
@@ -25,8 +26,6 @@ const shippori = Shippori_Mincho({
   preload: false,
 });
 
-const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? "https://lavie.vn";
-
 export const metadata: Metadata = {
   metadataBase: new URL(siteUrl),
   title: "Lavie — Dạy tiếng Nhật N5–N2 tại Huế",
@@ -43,8 +42,10 @@ export const metadata: Metadata = {
     "tiếng Nhật N2",
     "học tiếng Nhật online",
   ],
+  alternates: { canonical: "/" },
   openGraph: {
     type: "website",
+    url: "/",
     locale: "vi_VN",
     siteName: "Lavie 日本語",
     title: "Lavie — Tiếng Nhật, nở hoa.",
@@ -70,7 +71,15 @@ const jsonLd = {
   telephone: site.contact.phoneIntl,
   address: { "@type": "PostalAddress", addressLocality: "Huế", addressCountry: "VN" },
   areaServed: ["Huế", "Việt Nam", "Online"],
-  founder: { "@type": "Person", name: "Lavie", jobTitle: "Giáo viên tiếng Nhật" },
+  founder: {
+    "@type": "Person",
+    name: "Lavie",
+    jobTitle: "Giáo viên tiếng Nhật",
+    hasCredential: site.credentials.map((c) => ({
+      "@type": "EducationalOccupationalCredential",
+      name: `${c.label} ${c.value}`,
+    })),
+  },
   knowsLanguage: ["ja", "vi"],
   url: siteUrl,
 };
@@ -81,6 +90,10 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
       <body>
         <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
         {children}
+        {/* Safari 26 tints its bars from fixed elements at the screen edges and keeps the
+            first one it saw (the beige loader). These invisible strips hand it the page colour. */}
+        <div aria-hidden className="edge-tint top-0" />
+        <div aria-hidden className="edge-tint bottom-0" />
       </body>
     </html>
   );

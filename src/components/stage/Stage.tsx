@@ -66,13 +66,15 @@ function Stage({ orient }: { orient: Orient }) {
 
     /* ── camera moves as frame sequences ──────────────────────── */
     const tier = frameTier(orient);
-    const seqs = reduced ? [] : TRANSITIONS.map((t) => new FrameSequence(t, tier));
     const canvas = canvasRef.current!;
     const [cw, ch] = tier === "m720" ? [720, 1280] : tier === "1600" ? [1600, 900] : [1024, 576];
     canvas.width = cw;
     canvas.height = ch;
-    const ctx = canvas.getContext("2d", { alpha: false })!;
-    ctx.imageSmoothingQuality = "high";
+    const ctx = canvas.getContext("2d", { alpha: false });
+    if (ctx) ctx.imageSmoothingQuality = "high";
+    // no canvas or no off-thread decoding → the stills cross-fade instead (and nothing is fetched)
+    const canScrub = !reduced && !!ctx && typeof createImageBitmap === "function";
+    const seqs = canScrub ? TRANSITIONS.map((t) => new FrameSequence(t, tier)) : [];
     let drawn = { k: -1, p: -1, v: -1 };
     let lastP = 0;
 
@@ -87,8 +89,9 @@ function Stage({ orient }: { orient: Orient }) {
       if (i === lastBase) v.play().catch(() => {});
     };
 
-    // decode every still up front so a scene never flashes empty on first show
-    posterRefs.current.forEach((img) => img?.decode?.().catch(() => {}));
+    // decode stills just ahead of need (all five decoded at once is ~40 MB on a phone)
+    const decodePoster = (i: number) => posterRefs.current[i]?.decode?.().catch(() => {});
+    decodePoster(0);
 
     /* ── hero readiness for the loader ────────────────────────── */
     let announced = false;
@@ -96,8 +99,6 @@ function Stage({ orient }: { orient: Orient }) {
       if (announced) return;
       announced = true;
       window.dispatchEvent(new Event("lavie:stage-ready"));
-      // then fetch every camera move in journey order, coarse frames first
-      seqs.forEach((s) => s.load());
     };
     const heroPoster = posterRefs.current[0];
     const heroLoop = loopRefs.current[0];
@@ -105,16 +106,20 @@ function Stage({ orient }: { orient: Orient }) {
     seqs[0]?.load(true);
     const posterReady = new Promise<void>((r) => {
       if (!heroPoster || heroPoster.complete) r();
-      else heroPoster.addEventListener("load", () => r(), { once: true });
+      else {
+        heroPoster.addEventListener("load", () => r(), { once: true });
+        heroPoster.addEventListener("error", () => r(), { once: true });
+      }
     });
     const loopReady = new Promise<void>((r) => {
       if (reduced || !heroLoop) return r();
       if (heroLoop.readyState >= 3) return r();
       heroLoop.addEventListener("canplay", () => r(), { once: true });
-      setTimeout(r, 3500);
     });
-    Promise.all([posterReady, loopReady]).then(announce);
-    const failSafe = setTimeout(announce, 6000);
+    // the painted still is enough to begin; the loop fades in when it can (its first frame is the still)
+    const loopOrWait = Promise.race([loopReady, new Promise<void>((r) => setTimeout(r, 1200))]);
+    posterReady.then(() => loopOrWait).then(announce);
+    const failSafe = setTimeout(announce, 3000);
 
     /* ── scroll triggers for each camera move ─────────────────── */
     const triggers = TRANSITIONS.map((_, k) => {
@@ -173,13 +178,17 @@ function Stage({ orient }: { orient: Orient }) {
         });
         ensureLoop(base);
         ensureLoop(Math.min(base + 1, STAGE_SCENES.length - 1));
+        decodePoster(base);
+        decodePoster(base + 1);
+        decodePoster(base - 1);
       }
 
       // draw the camera move
       let canvasO = 0;
       let seqShown = false;
+      for (let i = 0; i < seqs.length; i++) seqs[i].active = i === k;
       const seq = k >= 0 ? seqs[k] : undefined;
-      if (seq) {
+      if (seq && ctx) {
         const f = p * (seq.n - 1);
         seq.decodeAround(f, p >= lastP ? 1 : -1);
         lastP = p;

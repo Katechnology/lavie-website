@@ -4,9 +4,14 @@ import { useEffect, useState } from "react";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import Mark from "./Mark";
 import { loaderPhrases } from "@/content/site";
-import { getStore, setStore } from "@/lib/store";
+import { getStore, scrollToId, setStore } from "@/lib/store";
 
-const MIN_MS = 1600;
+/** long enough for the stamp to land; short enough not to stand between a visitor and the page */
+const MIN_MS = 900;
+/** never wait longer than this for fonts: the page is readable in the fallback serif */
+const FONT_WAIT_MS = 800;
+/** hard cap on the whole loader, even if the stage never reports in */
+const MAX_MS = 3500;
 
 export default function Loader() {
   const [phrase, setPhrase] = useState(0);
@@ -22,16 +27,21 @@ export default function Loader() {
       finished = true;
       const wait = Math.max(0, MIN_MS - (performance.now() - t0));
       setTimeout(async () => {
-        await document.fonts?.ready;
+        await Promise.race([document.fonts?.ready, new Promise((r) => setTimeout(r, FONT_WAIT_MS))]);
         setLeaving(true);
         getStore().lenis?.start();
         setStore({ ready: true });
-        requestAnimationFrame(() => ScrollTrigger.refresh());
+        requestAnimationFrame(() => {
+          ScrollTrigger.refresh();
+          // a shared link like …/#lien-he lands on that section once the stage is set
+          const hash = decodeURIComponent(location.hash.slice(1));
+          if (hash) scrollToId(hash, { immediate: true });
+        });
         setTimeout(() => setGone(true), 1100);
       }, wait);
     };
     window.addEventListener("lavie:stage-ready", finish);
-    const failSafe = setTimeout(finish, 7000);
+    const failSafe = setTimeout(finish, MAX_MS);
     return () => {
       clearInterval(cycle);
       clearTimeout(failSafe);
@@ -45,7 +55,12 @@ export default function Loader() {
       role="status"
       aria-live="polite"
       className="fixed inset-0 z-[100] grid place-items-center bg-[#f2eee8] text-ink transition-[opacity,visibility] duration-1000"
-      style={{ opacity: leaving ? 0 : 1, visibility: leaving ? "hidden" : "visible" }}
+      style={{
+        opacity: leaving ? 0 : 1,
+        visibility: leaving ? "hidden" : "visible",
+        // if the app never hydrates, CSS alone still lifts the loader off the page
+        animation: "loader-failsafe .6s ease 6s forwards",
+      }}
     >
       <div
         className="flex flex-col items-center gap-4 transition-transform duration-1000 ease-[cubic-bezier(.22,1,.36,1)]"
@@ -59,7 +74,7 @@ export default function Loader() {
         </p>
       </div>
       <p className="mono-label absolute bottom-6 text-ink/45">Lavie · 日本語 · Huế</p>
-      <style>{`@keyframes fade-up{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:none}}`}</style>
+      <style>{`@keyframes fade-up{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:none}}@keyframes loader-failsafe{to{opacity:0;visibility:hidden;pointer-events:none}}`}</style>
     </div>
   );
 }

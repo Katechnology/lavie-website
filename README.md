@@ -19,17 +19,26 @@ pnpm build      # static production build
 | Bờ đá — Lavie's letter + polaroid | `#ve-lavie` | still |
 | Phòng học đêm — formats, trial steps, FAQ, CTA | `#lop-hoc`, `#lien-he` | loop |
 
-Between scenes, AI-generated camera moves (`public/video/t12…t45`) are **scrubbed by scroll**
-(`src/components/stage/Stage.tsx`). Phones in portrait get their own 9:16 painted set (`*-m-*`).
+Between scenes, AI-generated camera moves are **scrubbed by scroll** as WebP frame sequences on a
+canvas (`public/seq/t12…t45`, `src/lib/frames.ts`, `src/components/stage/Stage.tsx`). Each move is
+fetched only when the visitor reaches the scene before it. Phones in portrait get their own 9:16
+painted set (`*-m-*`) and 720p loops.
 
 ## Editing content
 
 All copy lives in **`src/content/site.ts`** (Vietnamese).
 
-- `site.credentials` and `site.testimonials` are empty on purpose: the page hides those blocks until
-  real facts are filled in (JLPT certificate, years teaching, real student quotes).
+- `site.credentials` holds confirmed facts only (JLPT N1, confirmed by the owner). Add years teaching
+  when known. `site.testimonials` stays empty until there are real student quotes; the block is hidden
+  while empty.
 - Phone / Zalo: `site.contact`.
-- Set `NEXT_PUBLIC_SITE_URL` to the real domain for correct Open Graph links.
+- Site URL (canonical, Open Graph, sitemap, robots, JSON-LD): on Vercel the production `*.vercel.app`
+  address is used automatically. Set `NEXT_PUBLIC_SITE_URL` once a custom domain exists.
+
+## Deploy
+
+Vercel, Next.js preset, `pnpm build`. Media under `/seq`, `/video`, `/scenes`, `/img` is cached for a
+week (`next.config.ts`): **when an asset's bytes change, give it a new file or folder name.**
 
 ## Art pipeline (`art/`)
 
@@ -37,7 +46,8 @@ All copy lives in **`src/content/site.ts`** (Vietnamese).
 - `art/gen.sh <prompt.md> <out.png> <size> [ref…]` — renders a painting with Codex's image tool.
 - Videos: fal `minimax/h3-max-turbo/image-to-video` at 1080P — loops use the same first/last
   frame, transitions use scene A → scene B. Job ids in `art/video/jobs.txt`.
-- `art/encode.sh`, `art/encode-m.sh` — web encodes (scrub-friendly GOP 4 for transitions, VP9 + H.264 loops).
+- `art/encode.sh`, `art/encode-m.sh` — web encodes of the ambient loops (VP9 + H.264).
+- `art/frames.sh` — cuts the camera moves into the WebP frame sequences in `public/seq`.
 
 ## Stack
 

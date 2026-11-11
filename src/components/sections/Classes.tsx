@@ -133,7 +133,7 @@ export default function Classes() {
           </div>
           <div data-rise className="space-y-2">
             {faqs.map((f) => (
-              <details key={f.q} className="glass-warm group rounded-[16px] px-6 py-5 [&_summary::-webkit-details-marker]:hidden">
+              <details key={f.q} onToggle={() => ScrollTrigger.refresh()} className="glass-warm group rounded-[16px] px-6 py-5 [&_summary::-webkit-details-marker]:hidden">
                 <summary className="flex cursor-pointer list-none items-center justify-between gap-4 font-serif text-[19px] text-cream">
                   {f.q}
                   <span className="grid h-7 w-7 shrink-0 place-items-center rounded-full bg-cream/10 text-lamp transition-transform duration-300 group-open:rotate-45" aria-hidden>

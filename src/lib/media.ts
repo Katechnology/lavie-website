@@ -24,11 +24,14 @@ type Conn = { saveData?: boolean; effectiveType?: string };
 const conn = (): Conn | undefined => (navigator as Navigator & { connection?: Conn }).connection;
 const slow = () => !!conn()?.saveData || /(^|-)2g|3g/.test(conn()?.effectiveType ?? "");
 
-/** Ambient loops: crisp. Desktop 1920×1080 / 1280×720; phones 1080×1920 / 720×1280. */
+/**
+ * Ambient loops. Desktop 1920×1080 / 1280×720. Portrait: phones get 720×1280 (soft painted
+ * motion behind text; 1080 costs ~2× the bytes on 4G for no visible gain), tablets 1080×1920.
+ */
 function loopRes(o: Orient): "1080" | "720" {
   if (typeof window === "undefined" || slow()) return "720";
   const dpr = Math.min(window.devicePixelRatio || 1, 3);
-  if (o === "m") return window.innerWidth * dpr >= 700 ? "1080" : "720";
+  if (o === "m") return window.innerWidth >= 600 ? "1080" : "720";
   return window.innerWidth * dpr >= 1500 ? "1080" : "720";
 }
 

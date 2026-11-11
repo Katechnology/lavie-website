@@ -1,0 +1,8 @@
+# raw art sources and local tooling: not needed to build or serve the site
+/art
+/.claude
+/.next
+/node_modules
+*.tsbuildinfo
+PLAN.md
+AGENTS.md

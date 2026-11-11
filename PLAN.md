@@ -45,4 +45,5 @@ fonts: Roboto Serif (VI), Roboto Mono, Shippori Mincho (JP glyphs).
 ## Facts (from client)
 Lavie · Japanese tutor N5–N2 · Huế City, Vietnam · 0917 989 323 · Zalo same number ·
 formats: 1-1 online, 1-1 in Huế, small group, JLPT prep · no prices ("liên hệ học phí", free trial lesson).
-Placeholders (marked `TODO(Lavie)` in `src/content/site.ts`): JLPT certificate, years teaching, student results, testimonials.
+Confirmed: JLPT N1, free trial lesson is real.
+Still open (marked `TODO(Lavie)` in `src/content/site.ts`): years teaching, student results, testimonials.

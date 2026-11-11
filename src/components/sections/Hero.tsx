@@ -7,7 +7,7 @@ import { useGSAP } from "@gsap/react";
 import SplitText from "@/components/SplitText";
 import { ScrollHint } from "@/components/chrome/Chrome";
 import { hero } from "@/content/site";
-import { scrollToId, useStore } from "@/lib/store";
+import { prefersReducedMotion, scrollToId, useStore } from "@/lib/store";
 
 gsap.registerPlugin(ScrollTrigger, useGSAP);
 
@@ -19,6 +19,7 @@ export default function Hero() {
   // as the camera tilts up into the sky, the headline dissolves in place, line by line
   useGSAP(
     () => {
+      if (prefersReducedMotion()) return;
       const lines = gsap.utils.toArray<HTMLElement>("[data-dissolve]");
       gsap
         .timeline({
@@ -94,9 +95,15 @@ export default function Hero() {
               </span>
             ))}
           </h1>
-          <div data-dissolve>
+          <div data-dissolve className="relative">
+            {/* phones: the subtitle sits over pale blossoms; a soft pool of sky-shadow behind it only */}
+            <div
+              aria-hidden
+              className="pointer-events-none absolute -inset-x-8 -top-2 -bottom-6 bg-[radial-gradient(closest-side,rgba(14,44,98,.55),rgba(14,44,98,.28)_60%,transparent)] transition-opacity delay-700 duration-1000 md:hidden"
+              style={{ opacity: ready ? 1 : 0 }}
+            />
             <p
-              className="mt-6 max-w-[42ch] text-[16.5px] leading-[1.5] text-white [text-shadow:0_1px_2px_rgba(10,40,90,.45),0_2px_18px_rgba(10,40,100,.55)] transition-[opacity,transform] delay-700 duration-1000 md:mt-7 md:text-[19px]"
+              className="relative mt-6 max-w-[42ch] text-[16.5px] leading-[1.5] text-white [text-shadow:0_1px_2px_rgba(10,40,90,.45),0_2px_18px_rgba(10,40,100,.55)] transition-[opacity,transform] delay-700 duration-1000 md:mt-7 md:text-[19px]"
               style={{
                 opacity: ready ? 1 : 0,
                 transform: ready ? "none" : "translateY(10px)",

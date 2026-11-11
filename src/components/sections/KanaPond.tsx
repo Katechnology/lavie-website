@@ -5,6 +5,7 @@ import { gsap } from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { useGSAP } from "@gsap/react";
 import { kana, type KanaItem } from "@/content/site";
+import { prefersReducedMotion } from "@/lib/store";
 
 gsap.registerPlugin(ScrollTrigger, useGSAP);
 
@@ -49,6 +50,7 @@ export default function KanaPond() {
 
   useGSAP(
     () => {
+      if (prefersReducedMotion()) return;
       gsap.from("[data-pond-head] > *", {
         y: 26,
         opacity: 0,
@@ -64,6 +66,7 @@ export default function KanaPond() {
   // glyphs float up like petals surfacing whenever the set changes
   useGSAP(
     () => {
+      if (prefersReducedMotion()) return;
       gsap.fromTo(
         "[data-glyph]",
         { y: 18, opacity: 0, scale: 0.9 },

@@ -336,7 +336,9 @@ const ScrollReveal: React.FC<ScrollRevealProps> = ({
   ]);
 
   return (
-    <Tag ref={containerRef as React.RefObject<HTMLHeadingElement>} className={`my-5 ${containerClassName}`} aria-label={text ?? undefined}>
+    <Tag ref={containerRef as React.RefObject<HTMLHeadingElement>} className={`my-5 ${containerClassName}`}>
+      {/* aria-label is not read on <p>; give screen readers the plain text instead */}
+      {text !== null && <span className="sr-only">{text}</span>}
       <span
         ref={textRef}
         className={`block text-[clamp(1.6rem,4vw,3rem)] leading-[1.5] font-semibold ${textClassName}`}

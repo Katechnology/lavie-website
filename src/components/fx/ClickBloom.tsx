@@ -220,14 +220,25 @@ export default function ClickBloom() {
     let dpr = 1;
     let W = 0;
     let H = 0;
-    const resize = () => {
-      dpr = Math.min(window.devicePixelRatio || 1, 2);
-      W = window.innerWidth;
-      H = window.innerHeight;
+    const fit = () => {
+      const d = Math.min(window.devicePixelRatio || 1, 2);
+      const w = window.innerWidth;
+      const h = window.innerHeight;
+      if (d === dpr && w === W && h === H) return; // reallocating a full-screen canvas isn't free
+      dpr = d;
+      W = w;
+      H = h;
       canvas.width = Math.round(W * dpr);
       canvas.height = Math.round(H * dpr);
     };
-    resize();
+    // phones fire resize on every address-bar slide; settle first
+    let resizeT = 0;
+    const resize = () => {
+      clearTimeout(resizeT);
+      resizeT = window.setTimeout(fit, 150);
+    };
+    dpr = 0;
+    fit();
     window.addEventListener("resize", resize);
 
     const ps: P[] = [];
@@ -597,6 +608,7 @@ export default function ClickBloom() {
     return () => {
       cancelAnimationFrame(raf);
       window.removeEventListener("resize", resize);
+      clearTimeout(resizeT);
       window.removeEventListener("pointerdown", onDown);
       window.removeEventListener("pointerup", onUp);
       window.removeEventListener("pointercancel", onUp);
