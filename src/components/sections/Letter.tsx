@@ -38,17 +38,31 @@ export default function Letter() {
   useGSAP(
     () => {
       const mm = gsap.matchMedia();
-      mm.add("(prefers-reduced-motion: no-preference)", () => {
+      mm.add({ motion: "(prefers-reduced-motion: no-preference)", wide: "(min-width: 1280px)" }, (ctx) => {
+        const { motion, wide } = ctx.conditions as { motion: boolean; wide: boolean };
+        if (!motion) return;
         // the letter is set down on the stone like a sheet of paper
         gsap.fromTo(
           "[data-sheet]",
           { y: 120, rotate: -7, rotateX: 28, opacity: 0, transformPerspective: 1400 },
           { y: 0, rotate: -1.2, rotateX: 0, opacity: 1, ease: "power3.out", scrollTrigger: { trigger: "[data-sheet]", start: "top 95%", end: "top 45%", scrub: 0.4 } },
         );
+        // the photo is dropped onto the letter. Wide screens: pinned to the letter's corner, so it
+        // lands with the sheet. Narrower: it sits above the letter, so it must land on its own
+        // position (tied to the sheet, it only became opaque once it had scrolled off screen).
         gsap.fromTo(
           "[data-polaroid]",
-          { y: -80, x: 60, rotate: 18, opacity: 0 },
-          { y: 0, x: 0, rotate: 5, opacity: 1, ease: "power3.out", scrollTrigger: { trigger: "[data-sheet]", start: "top 80%", end: "top 35%", scrub: 0.4 } },
+          wide ? { y: -80, x: 60, rotate: 18, opacity: 0 } : { y: -40, x: 24, rotate: 12, opacity: 0 },
+          {
+            y: 0,
+            x: 0,
+            rotate: 5,
+            opacity: 1,
+            ease: "power3.out",
+            scrollTrigger: wide
+              ? { trigger: "[data-sheet]", start: "top 80%", end: "top 35%", scrub: 0.4 }
+              : { trigger: "[data-polaroid]", start: "top 95%", end: "top 60%", scrub: 0.4 },
+          },
         );
         gsap.from("[data-hanko]", {
           scale: 1.8,
@@ -71,7 +85,7 @@ export default function Letter() {
             {/* polaroid */}
             <div
               data-polaroid
-              className="relative z-10 mx-auto mb-[-56px] w-[220px] md:absolute md:-top-16 md:-right-36 md:mx-0 md:mb-0 md:w-[250px]"
+              className="relative z-10 mx-auto mb-[-56px] w-[220px] sm:w-[250px] xl:absolute xl:-top-16 xl:-right-36 xl:mx-0 xl:mb-0"
             >
               <span className="absolute -top-3 left-1/2 z-20 h-7 w-24 -translate-x-1/2 rotate-2 bg-[#cfe3d0]/85 shadow-sm" aria-hidden />
               <TiltedCard
@@ -105,7 +119,7 @@ export default function Letter() {
             {/* the letter */}
             <article
               data-sheet
-              className="washi relative rounded-[3px] px-7 pt-20 pb-10 text-ink shadow-[0_50px_70px_-35px_rgba(40,25,10,.6),0_2px_0_rgba(255,255,255,.6)_inset] sm:px-12 md:pt-14 md:pr-24"
+              className="washi relative rounded-[3px] px-7 pt-20 pb-10 text-ink shadow-[0_50px_70px_-35px_rgba(40,25,10,.6),0_2px_0_rgba(255,255,255,.6)_inset] sm:px-12 xl:pt-14 xl:pr-24"
             >
               {/* faint ruled lines like 便箋 letter paper */}
               <div
